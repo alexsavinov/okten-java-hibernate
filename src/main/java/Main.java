@@ -1,4 +1,6 @@
-import models.User;
+import models.Body;
+import models.Guitar;
+import models.Pickup;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
@@ -19,35 +21,53 @@ public class Main {
 
         Metadata metadata =
                 new MetadataSources(serviceRegistry)
-                        .addAnnotatedClass(User.class) /*!!!!!!! register class*/
+                        .addAnnotatedClass(Guitar.class)
                         .getMetadataBuilder()
                         .build();
         SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
         Session session = sessionFactory.openSession();
 
-        //work space
-
+        /* Creating a list of entities */
         session.beginTransaction();
 
-        session.save(new User("vasya", "pupkin"));
-        session.save(new User("peyua", "kkosov"));
-        session.save(new User("taras"));
-        session.save(new User("ananas"));
-        session.save(new User("kokos"));
-        session.save(new User("max", "golov"));
+        session.save(Guitar.builder()
+                .manufacturerName("Les Paul")
+                .pickup(Pickup.HH)
+                .body(Body.MAHOGANY)
+                .caseIncluded(true)
+                .numberOfStrings(6)
+                .build());
+
+        session.save(Guitar.builder()
+                .manufacturerName("Ibanez")
+                .pickup(Pickup.HH)
+                .body(Body.ALDER)
+                .caseIncluded(false)
+                .numberOfStrings(7)
+                .build());
+
+        session.save(Guitar.builder()
+                .manufacturerName("Fender")
+                .pickup(Pickup.SSS)
+                .body(Body.ASH)
+                .caseIncluded(true)
+                .numberOfStrings(6)
+                .build());
+
         session.getTransaction().commit();
 
-        List<User> list =
-//                session.createNativeQuery("select * from user_table", User.class).list();
-                session.createQuery("select u from User u", User.class).list();
-//        System.out.println(list);
+        List<Guitar> guitars = session.createQuery("from Guitar", Guitar.class).list();
 
-        User user = session.find(User.class, 2);
-        System.out.println(user);
+        /* List output */
+        System.out.println("---- List of Guitars:");
+        guitars.forEach(System.out::println);
 
+        /* Search entity by id */
+        Guitar guitar = session.find(Guitar.class, 2);
 
+        System.out.println("---- Guitar entity with id 2:");
+        System.out.println(guitar);
 
-        /*end dont forget*/
         session.close();
         sessionFactory.close();
     }
